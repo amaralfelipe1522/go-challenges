@@ -15,12 +15,21 @@ import (
 	linuxproc "github.com/c9s/goprocinfo/linux"
 )
 
-func printMemory() {
+//Stats armazenará as informações retornadas de todos os métodos presente em main.go
+type Stats struct {
+	MemAlloc uint64 `json:"memoryalloc"`
+	MemSys   uint64 `json:"memorysys"`
+	OSCPU    uint64 `json:"oscpu"`
+	DiskName string `json:"name"`
+}
+
+func (s *Stats) printMemory() {
 	mem := new(runtime.MemStats)
 	runtime.ReadMemStats(mem)
-
-	fmt.Printf("Memória alocada no momento é %v bytes (%vmb).\n", mem.Alloc, bToMb(mem.Alloc))
-	fmt.Printf("Memória utilizada no Sistema Operacional no momento é %v bytes (%vmb).\n", mem.Sys, bToMb(mem.Sys))
+	//fmt.Printf("Memória alocada no momento é %v bytes (%vmb).\n", mem.Alloc, bToMb(mem.Alloc))
+	s.MemAlloc = mem.Alloc
+	//fmt.Printf("Memória utilizada no Sistema Operacional no momento é %v bytes (%vmb).\n", mem.Sys, bToMb(mem.Sys))
+	s.MemSys = mem.Sys
 }
 
 func printCPU() {
@@ -32,7 +41,7 @@ func printCPU() {
 	fmt.Println("Iniciando leitura da CPU...")
 	for _, s := range status.CPUStats {
 		fmt.Printf("O uso de CPU atual no Sistema Operacional é %v bytes (%vmb).\n", s.System, bToMb(s.System))
-		fmt.Printf("O uso de CPU atual do usuário é %v bytes (%vmb).\n", s.User, bToMb(s.User))
+		// fmt.Printf("O uso de CPU atual do usuário é %v bytes (%vmb).\n", s.User, bToMb(s.User))
 	}
 	fmt.Println("Leitura da CPU finalizada!")
 }
@@ -45,10 +54,10 @@ func printDisc() {
 	fmt.Println("Iniciando leitura do disco...")
 
 	for _, s := range status {
-		fmt.Printf("Major %v.\n", s.Major)
-		fmt.Printf("Minor %v.\n", s.Minor)
+		// fmt.Printf("Major %v.\n", s.Major)
+		// fmt.Printf("Minor %v.\n", s.Minor)
 		fmt.Printf("Name %v.\n", s.Name)
-		fmt.Printf("ReadIOs %v.\n", s.ReadIOs)
+		// fmt.Printf("ReadIOs %v.\n", s.ReadIOs)
 	}
 	fmt.Println("Leitura de disco finalizada.")
 
@@ -70,7 +79,10 @@ func bToMb(b uint64) uint64 {
 }
 
 func main() {
-	printMemory()
-	printCPU()
-	printDisc()
+	stats := Stats{}
+	stats.printMemory()
+	// printCPU()
+	// printDisc()
+
+	fmt.Println("Struct:", stats)
 }
