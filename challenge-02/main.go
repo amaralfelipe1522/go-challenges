@@ -8,6 +8,7 @@ Expose the hardware utilization stats collected from your machine on http://loca
 */
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"runtime"
@@ -17,50 +18,53 @@ import (
 
 //Stats armazenará as informações retornadas de todos os métodos presente em main.go
 type Stats struct {
-	MemAlloc uint64 `json:"memoryalloc"`
-	MemSys   uint64 `json:"memorysys"`
-	OSCPU    uint64 `json:"oscpu"`
-	DiskName string `json:"name"`
+	MemAlloc  uint64     `json:"memoryalloc"`
+	MemSys    uint64     `json:"memorysys"`
+	OSCPU     [8]uint64  `json:"oscpu"`
+	UserCPU   [8]uint64  `json:"usercpu"`
+	DiskName  [12]string `json:"diskname"`
+	DiskMajor [12]int    `json:"diskmajor"`
 }
 
-func (s *Stats) printMemory() {
+func (st *Stats) printMemory() {
 	mem := new(runtime.MemStats)
 	runtime.ReadMemStats(mem)
 	//fmt.Printf("Memória alocada no momento é %v bytes (%vmb).\n", mem.Alloc, bToMb(mem.Alloc))
-	s.MemAlloc = mem.Alloc
+	st.MemAlloc = mem.Alloc
 	//fmt.Printf("Memória utilizada no Sistema Operacional no momento é %v bytes (%vmb).\n", mem.Sys, bToMb(mem.Sys))
-	s.MemSys = mem.Sys
+	st.MemSys = mem.Sys
 }
 
-func printCPU() {
+func (st *Stats) printCPU() {
 	status, err := linuxproc.ReadStat("/proc/stat")
 	if err != nil {
 		log.Fatal("Falha na leitura")
 	}
 
-	fmt.Println("Iniciando leitura da CPU...")
-	for _, s := range status.CPUStats {
-		fmt.Printf("O uso de CPU atual no Sistema Operacional é %v bytes (%vmb).\n", s.System, bToMb(s.System))
-		// fmt.Printf("O uso de CPU atual do usuário é %v bytes (%vmb).\n", s.User, bToMb(s.User))
+	for i, s := range status.CPUStats {
+		//fmt.Printf("O uso de CPU atual no Sistema Operacional é %v bytes (%vmb).\n", s.System, bToMb(s.System))
+		st.OSCPU[i] = s.System
+		//fmt.Printf("O uso de CPU atual do usuário é %v bytes (%vmb).\n", s.User, bToMb(s.User))
+		st.UserCPU[i] = s.User
 	}
-	fmt.Println("Leitura da CPU finalizada!")
 }
 
-func printDisc() {
+func (st *Stats) printDisc() {
 	status, err := linuxproc.ReadDiskStats("/proc/diskstats")
 	if err != nil {
 		log.Fatal("Falha na leitura")
 	}
-	fmt.Println("Iniciando leitura do disco...")
 
-	for _, s := range status {
-		// fmt.Printf("Major %v.\n", s.Major)
-		// fmt.Printf("Minor %v.\n", s.Minor)
-		fmt.Printf("Name %v.\n", s.Name)
-		// fmt.Printf("ReadIOs %v.\n", s.ReadIOs)
+	for i, s := range status {
+		if i <= 11 {
+			//fmt.Printf("Major %v.\n", s.Major)
+			st.DiskMajor[i] = s.Major
+			// fmt.Printf("Minor %v.\n", s.Minor)
+			//fmt.Printf("Name %v.\n", s.Name)
+			st.DiskName[i] = s.Name
+			// fmt.Printf("ReadIOs %v.\n", s.ReadIOs)
+		}
 	}
-	fmt.Println("Leitura de disco finalizada.")
-
 	/*
 		status, err := linuxproc.ReadDisk("/proc/diskstats")
 		if err != nil {
@@ -81,8 +85,12 @@ func bToMb(b uint64) uint64 {
 func main() {
 	stats := Stats{}
 	stats.printMemory()
-	// printCPU()
-	// printDisc()
+	stats.printCPU()
+	stats.printDisc()
 
-	fmt.Println("Struct:", stats)
+	tojson, err := json.Marshal(stats)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(tojson))
 }
