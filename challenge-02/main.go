@@ -4,10 +4,7 @@ package main
 Acceptance Criteria
 In order to successfully complete this challenge, your project will have to:
 
-Collect the CPU utilization of your machine
-Collect the RAM Utilization of your machine
-Collect the Backing Storage Utilization of your machine
-Display the results in a friendly fashion in the console when go run main.go is executed.
+Expose the hardware utilization stats collected from your machine on http://localhost:9000/stats in JSON format
 */
 
 import (
