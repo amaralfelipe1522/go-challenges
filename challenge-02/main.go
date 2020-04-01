@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"runtime"
 
 	linuxproc "github.com/c9s/goprocinfo/linux"
@@ -82,7 +83,7 @@ func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
 }
 
-func main() {
+func printStatus(w http.ResponseWriter, r *http.Request) {
 	stats := Stats{}
 	stats.printMemory()
 	stats.printCPU()
@@ -92,5 +93,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(tojson))
+	fmt.Fprintf(w, string(tojson))
+}
+
+func main() {
+	http.HandleFunc("/stats", printStatus)
+	log.Println("Executando na porta 3000")
+	log.Fatal(http.ListenAndServe(":3000", nil))
 }
