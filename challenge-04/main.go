@@ -29,7 +29,7 @@ type Pokemon struct {
 	Height int    `json:"height"`
 }
 
-func (pkm *Pokemon) getPokemon(name string, waitgroup *sync.WaitGroup) {
+func (pkm *Pokemon) getPokemon(name string, waitgroup *sync.WaitGroup) Pokemon {
 	url := "https://pokeapi.co/api/v2/pokemon/" + name
 	response, err := http.Get(url)
 	if err != nil {
@@ -41,22 +41,30 @@ func (pkm *Pokemon) getPokemon(name string, waitgroup *sync.WaitGroup) {
 		log.Fatal(err)
 	}
 	json.Unmarshal(responseData, &pkm)
+	fmt.Println(*pkm)
 	waitgroup.Done()
+	return *pkm
 }
 
 func main() {
 	var pkm Pokemon
 	var pkmList []Pokemon
-
 	var waitgroup sync.WaitGroup
-	waitgroup.Add(1)
-	go pkm.getPokemon("ditto", &waitgroup)
+	waitgroup.Add(4)
+	go func() {
+		pkmList = append(pkmList, pkm.getPokemon("ditto", &waitgroup))
+		waitgroup.Done()
+	}()
+	go func() {
+		pkmList = append(pkmList, pkm.getPokemon("mew", &waitgroup))
+		waitgroup.Done()
+	}()
 	waitgroup.Wait()
-	pkmList = append(pkmList, pkm)
-	waitgroup.Add(1)
-	go pkm.getPokemon("mew", &waitgroup)
-	waitgroup.Wait()
-	pkmList = append(pkmList, pkm)
+
+	// waitgroup.Add(1)
+	// go pkm.getPokemon("mew", &waitgroup)
+	// waitgroup.Wait()
+	// pkmList = append(pkmList, pkm)
 
 	fmt.Println(pkmList)
 }
