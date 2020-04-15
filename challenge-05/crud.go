@@ -22,7 +22,12 @@ type produto struct {
 	prodQtd int
 }
 
-func insert(tx *sql.Tx, prod string, prodQtd int) {
+func insert(prod string, prodQtd int) {
+	db := openDB()
+	defer db.Close()
+
+	tx, _ := db.Begin()
+
 	stmt, _ := tx.Prepare("insert into cart(prod, prod_qtd) values (?,?)")
 
 	_, err := stmt.Exec(prod, prodQtd)
@@ -35,7 +40,12 @@ func insert(tx *sql.Tx, prod string, prodQtd int) {
 	fmt.Println("Uma linha inserida.")
 }
 
-func update(tx *sql.Tx, prod string, prodQtd int, id int) {
+func update(prod string, prodQtd int, id int) {
+	db := openDB()
+	defer db.Close()
+
+	tx, _ := db.Begin()
+
 	stmt, _ := tx.Prepare("update cart set prod = ?, prod_qtd = ? where id = ?")
 
 	_, err := stmt.Exec(prod, prodQtd, id)
@@ -48,10 +58,15 @@ func update(tx *sql.Tx, prod string, prodQtd int, id int) {
 	fmt.Println("Uma linha atualizada.")
 }
 
-func delete(tx *sql.Tx, id int) {
-	stmt, _ := tx.Prepare("delete from cart where id = ?")
+func delete(id int) {
+	db := openDB()
+	defer db.Close()
 
+	tx, _ := db.Begin()
+
+	stmt, _ := tx.Prepare("delete from cart where id = ?")
 	_, err := stmt.Exec(id)
+
 	if err != nil {
 		tx.Rollback()
 		log.Fatal(err)
@@ -61,7 +76,12 @@ func delete(tx *sql.Tx, id int) {
 	fmt.Println("Uma linha deletada.")
 }
 
-func (p *produto) selectOne(tx *sql.Tx, id int) {
+func (p *produto) selectOne(id int) {
+	db := openDB()
+	defer db.Close()
+
+	tx, _ := db.Begin()
+
 	tx.QueryRow("select * from cart where id = ?", id).Scan(&p.id, &p.prod, &p.prodQtd)
 
 	fmt.Println(*p)
@@ -96,12 +116,13 @@ func openDB() *sql.DB {
 	return db
 }
 
-func main() {
+//Orquestrador é responsável por identificar qual operação de CRUD será disparada a partir da chamada do server
+func Orquestrador() {
 	var p produto
 
-	// //delete(tx, 6)
-	// //insert(tx, "anador", 6)
-	// //update(tx, "desodorante", 2, 5)
-	// p.selectOne(tx, 1)
+	//delete(9)
+	//insert("anador", 6)
+	//update("fio dental", 3, 8)
+	p.selectOne(1)
 	p.selectAll()
 }
