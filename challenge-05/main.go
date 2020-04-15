@@ -42,6 +42,19 @@ func update(tx *sql.Tx, prod string, prodQtd int, id int) {
 	fmt.Println("Uma linha atualizada.")
 }
 
+func delete(tx *sql.Tx, id int) {
+	stmt, _ := tx.Prepare("delete from cart where id = ?")
+
+	_, err := stmt.Exec(id)
+	if err != nil {
+		tx.Rollback()
+		log.Fatal(err)
+	}
+
+	tx.Commit()
+	fmt.Println("Uma linha deletada.")
+}
+
 func main() {
 	db, err := sql.Open("mysql", "root:Project@1522@/store")
 	if err != nil {
@@ -51,6 +64,7 @@ func main() {
 
 	tx, _ := db.Begin()
 
-	//insert(tx, "camisinha", 2)
-	update(tx, "condicionador", 4, 4)
+	//delete(tx, 6)
+	//insert(tx, "anador", 6)
+	update(tx, "desodorante", 2, 5)
 }
