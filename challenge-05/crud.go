@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -117,12 +119,23 @@ func openDB() *sql.DB {
 }
 
 //Orquestrador é responsável por identificar qual operação de CRUD será disparada a partir da chamada do server
-func Orquestrador() {
+func Orquestrador(w http.ResponseWriter, r *http.Request) {
 	var p produto
+	crudType := strings.TrimPrefix(r.URL.Path, "/cart/")
+
+	switch {
+	case r.Method == "GET" && crudType == "selectone":
+		p.selectOne(1)
+	case r.Method == "GET" && crudType == "selectall":
+		p.selectAll()
+	default:
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Método de requisição diferente ou URL inválida.")
+	}
 
 	//delete(9)
 	//insert("anador", 6)
 	//update("fio dental", 3, 8)
-	p.selectOne(1)
-	p.selectAll()
+	//p.selectOne(1)
+	//p.selectAll()
 }
