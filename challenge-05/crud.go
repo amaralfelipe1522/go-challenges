@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,10 +19,11 @@ Expose a CRUD API that will have an in-memory list of shopping cart items.
 Whenever an endpoint is hit within your API, it will have to use logrus to log that event to a file in JSON format.
 */
 
-type produto struct {
-	id      int
-	prod    string
-	prodQtd int
+//Produto é utilizada para armazenar as consultas ao banco de dados
+type Produto struct {
+	ID      int    `json:"id"`
+	Prod    string `json:"prod"`
+	ProdQtd int    `json:"prod_qtd"`
 }
 
 func insert(prod string, prodQtd int) {
@@ -78,18 +80,22 @@ func delete(id int) {
 	fmt.Println("Uma linha deletada.")
 }
 
-func (p *produto) selectOne(id int) {
+func (p *Produto) selectOne(w http.ResponseWriter, r *http.Request, id int) {
 	db := openDB()
 	defer db.Close()
 
 	tx, _ := db.Begin()
 
-	tx.QueryRow("select * from cart where id = ?", id).Scan(&p.id, &p.prod, &p.prodQtd)
+	tx.QueryRow("select * from cart where id = ?", id).Scan(&p.ID, &p.Prod, &p.ProdQtd)
+	//fmt.Println(*p)
 
-	fmt.Println(*p)
+	json, _ := json.Marshal(p)
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(json))
 }
 
-func (p *produto) selectAll() {
+func (p *Produto) selectAll(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
 	defer db.Close()
 
@@ -101,13 +107,17 @@ func (p *produto) selectAll() {
 	}
 	defer rows.Close()
 
-	var pList []produto
+	var pList []Produto
 
 	for rows.Next() {
-		rows.Scan(&p.id, &p.prod, &p.prodQtd)
+		rows.Scan(&p.ID, &p.Prod, &p.ProdQtd)
 		pList = append(pList, *p)
 	}
-	fmt.Println(pList)
+
+	json, _ := json.Marshal(pList)
+	//fmt.Println(string(json))
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(json))
 }
 
 func openDB() *sql.DB {
@@ -120,14 +130,14 @@ func openDB() *sql.DB {
 
 //Orquestrador é responsável por identificar qual operação de CRUD será disparada a partir da chamada do server
 func Orquestrador(w http.ResponseWriter, r *http.Request) {
-	var p produto
+	var p Produto
 	crudType := strings.TrimPrefix(r.URL.Path, "/cart/")
 
 	switch {
 	case r.Method == "GET" && crudType == "selectone":
-		p.selectOne(1)
+		p.selectOne(w, r, 1)
 	case r.Method == "GET" && crudType == "selectall":
-		p.selectAll()
+		p.selectAll(w, r)
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Método de requisição diferente ou URL inválida.")
