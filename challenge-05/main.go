@@ -16,6 +16,12 @@ Expose a CRUD API that will have an in-memory list of shopping cart items.
 Whenever an endpoint is hit within your API, it will have to use logrus to log that event to a file in JSON format.
 */
 
+type produto struct {
+	id      int
+	prod    string
+	prodQtd int
+}
+
 func insert(tx *sql.Tx, prod string, prodQtd int) {
 	stmt, _ := tx.Prepare("insert into cart(prod, prod_qtd) values (?,?)")
 
@@ -55,6 +61,25 @@ func delete(tx *sql.Tx, id int) {
 	fmt.Println("Uma linha deletada.")
 }
 
+func (p *produto) selectOne(tx *sql.Tx, id int) produto {
+	tx.QueryRow("select * from cart where id = ?", id).Scan(&p.id, &p.prod, &p.prodQtd)
+
+	return *p
+}
+
+// func (p *produto) selectAll(tx *sql.Tx) produto {
+// 	rows, err := tx.QueryRow("select * from cart")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer rows.Close()
+
+// 	for rows.Next() {
+// 		rows.Scan(&p.id, &p.prod, &p.prodQtd)
+// 	}
+// 	return *p
+// }
+
 func main() {
 	db, err := sql.Open("mysql", "root:Project@1522@/store")
 	if err != nil {
@@ -62,9 +87,12 @@ func main() {
 	}
 	defer db.Close()
 
+	var p produto
+
 	tx, _ := db.Begin()
 
 	//delete(tx, 6)
 	//insert(tx, "anador", 6)
-	update(tx, "desodorante", 2, 5)
+	//update(tx, "desodorante", 2, 5)
+	fmt.Println(p.selectOne(tx, 1))
 }
