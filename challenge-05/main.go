@@ -29,6 +29,19 @@ func insert(tx *sql.Tx, prod string, prodQtd int) {
 	fmt.Println("Uma linha inserida.")
 }
 
+func update(tx *sql.Tx, prod string, prodQtd int, id int) {
+	stmt, _ := tx.Prepare("update cart set prod = ?, prod_qtd = ? where id = ?")
+
+	_, err := stmt.Exec(prod, prodQtd, id)
+	if err != nil {
+		tx.Rollback()
+		log.Fatal(err)
+	}
+
+	tx.Commit()
+	fmt.Println("Uma linha atualizada.")
+}
+
 func main() {
 	db, err := sql.Open("mysql", "root:Project@1522@/store")
 	if err != nil {
@@ -37,5 +50,7 @@ func main() {
 	defer db.Close()
 
 	tx, _ := db.Begin()
-	insert(tx, "camisinha", 2)
+
+	//insert(tx, "camisinha", 2)
+	update(tx, "condicionador", 4, 4)
 }
