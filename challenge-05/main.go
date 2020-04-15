@@ -61,24 +61,27 @@ func delete(tx *sql.Tx, id int) {
 	fmt.Println("Uma linha deletada.")
 }
 
-func (p *produto) selectOne(tx *sql.Tx, id int) produto {
+func (p *produto) selectOne(tx *sql.Tx, id int) {
 	tx.QueryRow("select * from cart where id = ?", id).Scan(&p.id, &p.prod, &p.prodQtd)
 
-	return *p
+	fmt.Println(*p)
 }
 
-// func (p *produto) selectAll(tx *sql.Tx) produto {
-// 	rows, err := tx.QueryRow("select * from cart")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer rows.Close()
+func (p *produto) selectAll(tx *sql.Tx) {
+	rows, err := tx.Query("select * from cart")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
 
-// 	for rows.Next() {
-// 		rows.Scan(&p.id, &p.prod, &p.prodQtd)
-// 	}
-// 	return *p
-// }
+	var pList []produto
+
+	for rows.Next() {
+		rows.Scan(&p.id, &p.prod, &p.prodQtd)
+		pList = append(pList, *p)
+	}
+	fmt.Println(pList)
+}
 
 func main() {
 	db, err := sql.Open("mysql", "root:Project@1522@/store")
@@ -94,5 +97,6 @@ func main() {
 	//delete(tx, 6)
 	//insert(tx, "anador", 6)
 	//update(tx, "desodorante", 2, 5)
-	fmt.Println(p.selectOne(tx, 1))
+	p.selectOne(tx, 1)
+	p.selectAll(tx)
 }
