@@ -67,7 +67,12 @@ func (p *produto) selectOne(tx *sql.Tx, id int) {
 	fmt.Println(*p)
 }
 
-func (p *produto) selectAll(tx *sql.Tx) {
+func (p *produto) selectAll() {
+	db := openDB()
+	defer db.Close()
+
+	tx, _ := db.Begin()
+
 	rows, err := tx.Query("select * from cart")
 	if err != nil {
 		log.Fatal(err)
@@ -83,20 +88,20 @@ func (p *produto) selectAll(tx *sql.Tx) {
 	fmt.Println(pList)
 }
 
-func main() {
+func openDB() *sql.DB {
 	db, err := sql.Open("mysql", "root:Project@1522@/store")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	return db
+}
 
+func main() {
 	var p produto
 
-	tx, _ := db.Begin()
-
-	//delete(tx, 6)
-	//insert(tx, "anador", 6)
-	//update(tx, "desodorante", 2, 5)
-	p.selectOne(tx, 1)
-	p.selectAll(tx)
+	// //delete(tx, 6)
+	// //insert(tx, "anador", 6)
+	// //update(tx, "desodorante", 2, 5)
+	// p.selectOne(tx, 1)
+	p.selectAll()
 }
