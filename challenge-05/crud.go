@@ -146,6 +146,4 @@ func Orquestrador(w http.ResponseWriter, r *http.Request) {
 	//delete(9)
 	//insert("anador", 6)
 	//update("fio dental", 3, 8)
-	//p.selectOne(1)
-	//p.selectAll()
 }
