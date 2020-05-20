@@ -85,10 +85,13 @@ func (pl *Playlist) removeMusic(deleteMusic *Music) {
 	} else {
 		currentMusic := pl.start
 		if currentMusic.title == deleteMusic.title {
+			//	Altera o Start caso o item a ser removido seja o primeiro
 			pl.start = currentMusic.next
 		} else {
 			for currentMusic.next != nil {
+				//	Armazena a música atual numa variavel Before
 				beforeMusic := currentMusic
+				//	define a próxima musica como atual
 				currentMusic = currentMusic.next
 				if currentMusic.title == deleteMusic.title {
 					beforeMusic.next = currentMusic.next
