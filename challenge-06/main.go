@@ -52,15 +52,74 @@ func main() {
 			title:  listRandom[i].title,
 			author: listRandom[i].author,
 		}
-		myList.insertMusic(&music)
+		myList.insertFinal(&music)
 	}
+	fmt.Println("Playlist 1.0:")
 	myList.showPlaylist()
+
+	newMusic := Music{
+		title:  "Konohatron",
+		author: "MC Maha",
+	}
+
+	afterMusic := listRandom[4] // "Baba Baby"
+
+	myList.insertInto(&newMusic, afterMusic)
+	fmt.Println("Playlist 1.1:")
+	myList.showPlaylist()
+
+	deleteMusic := newMusic
+	myList.removeMusic(&deleteMusic, afterMusic)
 }
 
-func (pl *Playlist) insertMusic(newMusic *Music) {
+func (pl *Playlist) removeMusic(deleteMusic *Music, afterMusic Music) {
+	//Adiciona a nova musica no primeiro link caso o tamanho da playlist seja zero
+	if pl.length == 0 {
+		fmt.Println("Playlist já está vazia")
+		// } else {
+		// 	currentMusic := pl.start
+		// 	// Varre os links até encontrar um titulo de musica igual
+		// 	for currentMusic.title != afterMusic.title {
+		// 		currentMusic = currentMusic.next
+		// 	}
+		// 	// Caso o Next não seja nulo, a nova musica troca de lugar com o next atual
+		// 	if currentMusic.next != nil {
+		// 		newMusic.next = currentMusic.next
+		// 		currentMusic.next = newMusic
+		// 	} else {
+		// 		currentMusic.next = newMusic
+		// 	}
+	}
+	pl.length++
+}
+
+func (pl *Playlist) insertInto(newMusic *Music, afterMusic Music) {
+	//Adiciona a nova musica no primeiro link caso o tamanho da playlist seja zero
 	if pl.length == 0 {
 		pl.start = newMusic
 	} else {
+		currentMusic := pl.start
+		// Varre os links até encontrar um titulo de musica igual
+		for currentMusic.title != afterMusic.title {
+			currentMusic = currentMusic.next
+		}
+		// Caso o Next não seja nulo, a nova musica troca de lugar com o next atual
+		if currentMusic.next != nil {
+			newMusic.next = currentMusic.next
+			currentMusic.next = newMusic
+		} else {
+			currentMusic.next = newMusic
+		}
+	}
+	pl.length++
+}
+
+func (pl *Playlist) insertFinal(newMusic *Music) {
+	//Adiciona a nova musica no primeiro link caso o tamanho da playlist seja zero
+	if pl.length == 0 {
+		pl.start = newMusic
+	} else {
+		// Varre os links até que encontre o elemento Next nulo, para poder armazenar a musica na playlist
 		currentMusic := pl.start
 		for currentMusic.next != nil {
 			currentMusic = currentMusic.next
@@ -71,7 +130,9 @@ func (pl *Playlist) insertMusic(newMusic *Music) {
 }
 
 func (pl *Playlist) showPlaylist() {
+	// Inicia a busca pelo elemento Start
 	list := pl.start
+	//Exibe as musicas até que lista fique nula
 	for list != nil {
 		fmt.Printf("Music: %s - Author: %s;\n", list.title, list.author)
 		list = list.next
