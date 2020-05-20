@@ -68,29 +68,35 @@ func main() {
 	fmt.Println("Playlist 1.1:")
 	myList.showPlaylist()
 
-	deleteMusic := newMusic
-	myList.removeMusic(&deleteMusic, afterMusic)
+	deleteMusic := Music{
+		title:  "Konohatron",
+		author: "MC Maha",
+	}
+
+	myList.removeMusic(&deleteMusic)
+	fmt.Println("Playlist 1.2:")
+	myList.showPlaylist()
 }
 
-func (pl *Playlist) removeMusic(deleteMusic *Music, afterMusic Music) {
+func (pl *Playlist) removeMusic(deleteMusic *Music) {
 	//Adiciona a nova musica no primeiro link caso o tamanho da playlist seja zero
 	if pl.length == 0 {
 		fmt.Println("Playlist já está vazia")
-		// } else {
-		// 	currentMusic := pl.start
-		// 	// Varre os links até encontrar um titulo de musica igual
-		// 	for currentMusic.title != afterMusic.title {
-		// 		currentMusic = currentMusic.next
-		// 	}
-		// 	// Caso o Next não seja nulo, a nova musica troca de lugar com o next atual
-		// 	if currentMusic.next != nil {
-		// 		newMusic.next = currentMusic.next
-		// 		currentMusic.next = newMusic
-		// 	} else {
-		// 		currentMusic.next = newMusic
-		// 	}
+	} else {
+		currentMusic := pl.start
+		if currentMusic.title == deleteMusic.title {
+			pl.start = currentMusic.next
+		} else {
+			for currentMusic.next != nil {
+				beforeMusic := currentMusic
+				currentMusic = currentMusic.next
+				if currentMusic.title == deleteMusic.title {
+					beforeMusic.next = currentMusic.next
+				}
+			}
+		}
+		pl.length--
 	}
-	pl.length++
 }
 
 func (pl *Playlist) insertInto(newMusic *Music, afterMusic Music) {
