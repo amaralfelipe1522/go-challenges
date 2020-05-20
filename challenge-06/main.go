@@ -14,6 +14,8 @@ You must implement a function or method that allows you to remove a Song from yo
 You must implement a function or method that allows you to insert a Song into your Playlist at any given point
 You must implement a function or method that allows you to add a Song to the end of your Playlist
 You must implement a function or method that displays the entire playlist in order.
+
+OBS.: Challenge concluído, porém fica como lição de casa preparar um retorno de tipo erro nas função (por conta dos FOR infinitos)
 */
 
 //Music é a estrutura básica da música armazenada
@@ -63,8 +65,12 @@ func main() {
 	}
 
 	afterMusic := listRandom[4] // "Baba Baby"
+	// afterMusic := Music{
+	// 	title:  "Baba Baby",
+	// 	author: "autor",
+	// }
 
-	myList.insertInto(&newMusic, afterMusic)
+	myList.insertInto(&newMusic, &afterMusic)
 	fmt.Println("Playlist 1.1:")
 	myList.showPlaylist()
 
@@ -102,7 +108,7 @@ func (pl *Playlist) removeMusic(deleteMusic *Music) {
 	}
 }
 
-func (pl *Playlist) insertInto(newMusic *Music, afterMusic Music) {
+func (pl *Playlist) insertInto(newMusic *Music, afterMusic *Music) {
 	//Adiciona a nova musica no primeiro link caso o tamanho da playlist seja zero
 	if pl.length == 0 {
 		pl.start = newMusic
